@@ -23,19 +23,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-
 public class DFS : MonoBehaviour {
-
-	public LinkedList<Node> Search(ref Node _start, ref Node _target)
-	{
-		_start.visited = true;
-		if (_start == _target) {
-			return LinkedList<Node> (_start);
-		}
-		
-		foreach(Node n in _start.)
-
-		return null;
-	}
 
 }
