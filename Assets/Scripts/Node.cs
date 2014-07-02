@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
-/**
- * Generic Node Class
- */
 public class Node : MonoBehaviour {
-	public Node parent;
-	public Node[] children;
-	public bool used = false;
+	public bool visited { get; set; }
+	public bool obstructed { get; set; }
+	public int X { get; set; }
+	public int Y { get; set; }
+	
+	//private Node[] _adjacent = new Node[8];
 }
