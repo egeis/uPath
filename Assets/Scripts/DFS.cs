@@ -23,6 +23,8 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class DFS : MonoBehaviour {
-
+public class DFS {
+	public bool Search(GameObject[,] _graph, Node _start) {
+		
+	}
 }
