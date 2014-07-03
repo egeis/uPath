@@ -9,8 +9,9 @@ public class Node : MonoBehaviour {
 	public const int CLEAR = 0;
 	public const int PATH = 4;
 	
-	public Node parent = null;
-	public bool Visited = true;	
+	public bool Visited = true;
+	public List<Node> adjacent = null; 
+		
 	public int Status {
 		get { return _status; }
 		set { if(value >= 0 && value < 5) _status = value; }
