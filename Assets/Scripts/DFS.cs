@@ -35,8 +35,7 @@ public class DFS {
 		}
 		
 		for( int i = 0; i < _start.adjacent.Count; i++ ) {
-			if(!_start.adjacent[i].Visited 
-			   && _start.adjacent[i].Status != Node.OBSTRUCTED) {
+			if(	_start.adjacent[i].IsValid() ) {
 				if(Search (_start.adjacent[i]) ) {
 					_path.Insert(0, _start);
 					return true;
@@ -48,5 +47,4 @@ public class DFS {
 	}
 	
 	public List<Node> GetPath() { return _path; }
-	
 }

@@ -25,6 +25,10 @@ public class Node : MonoBehaviour {
 		get { return (int) gameObject.transform.position.z; }
 	}
 
+	public bool IsValid() {
+		return !Visited && _status != Node.OBSTRUCTED; 
+	}
+
 	private int _status = 0;
 	
 }
