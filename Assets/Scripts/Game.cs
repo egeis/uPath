@@ -11,6 +11,9 @@ public class Game : MonoBehaviour {
 	private List<Node> _order = new List<Node>();
 	private Node _start;
 	
+	private float _time = 0.0f;
+	private float _period = 0.1f;
+	
 	private DFS depth = new DFS();
 
 	// Use this for initialization
@@ -66,31 +69,18 @@ public class Game : MonoBehaviour {
 		obs.Status = Node.OBSTRUCTED;
 		
 		Camera.main.transform.position = new Vector3( (float) (sx / 2), Camera.main.gameObject.transform.position.y,(float) -(sz / 10f));
-	
-		Time.timeScale = 0.23f;
-		
+			
 		Find(0);
 	}
 	
-	// Update is called once per frame
-	void Update () {
-		if (_order.Count > 0) {
-			_order[0].Animated = true;
-			_order.RemoveAt(0);
-		}
-		
+	void PreRender() {
 		for(int x = 0; x < sx; x++) {
 			for(int z = 0; z < sz; z++) {
 				Node n = _tiles[x,z].GetComponent("Node") as Node;
 				
 				switch (n.Status) {
 				case Node.CLEAR:
-					if(n.Animated == true ) {
-						_tiles[x,z].renderer.material.color = Color.white;
-					} else {
-						if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
-						else _tiles[x,z].renderer.material.color = Color.cyan;
-					}
+					_tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
 					break;
 				case Node.START:
 					_tiles[x,z].renderer.material.color = Color.blue;
@@ -106,9 +96,48 @@ public class Game : MonoBehaviour {
 		}
 	}
 	
+	// Update is called once per frame
+	void Update () {
+		if(Time.time > _time) {
+			_time += _period;
+			
+			if (_order.Count > 0) {
+				_order[0].Animated = true;
+				_order.RemoveAt(0);
+			}
+			
+			for(int x = 0; x < sx; x++) {
+				for(int z = 0; z < sz; z++) {
+					Node n = _tiles[x,z].GetComponent("Node") as Node;
+					
+					switch (n.Status) {
+					case Node.CLEAR:
+						if(n.Animated == true ) {
+							_tiles[x,z].renderer.material.color = Color.white;
+						} else {
+							if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
+							else _tiles[x,z].renderer.material.color = Color.cyan;
+						}
+						break;
+					case Node.START:
+						_tiles[x,z].renderer.material.color = Color.blue;
+						break;	
+					case Node.END:
+						_tiles[x,z].renderer.material.color = Color.yellow;
+						break;
+					case Node.OBSTRUCTED:
+						_tiles[x,z].renderer.material.color = Color.red;
+						break;		
+					}
+				}
+			}
+		}
+	}
+	
 	public void Find(int _method = 0) {	
 		bool _found = false;
-
+		PreRender();
+		
 		switch (_method) {
 			case 0:	//DFS
 				_found = depth.Find (_start);
