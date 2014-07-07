@@ -9,15 +9,20 @@ public class Game : MonoBehaviour {
 
 	private GameObject[,] _tiles;
 	private List<Node> _order = new List<Node>();
+	private List<Node> _path = new List<Node>();
 	private Node _start;
 	
-	private float _time = 0.0f;
 	private float _period = 0.1f;
+	private float _time = 0.0f;
+	public bool Drawing = false;
 	
 	private DFS depth = new DFS();
+	private BFS breadth = new BFS();
 
 	// Use this for initialization
 	void Start () {
+		_time = _period * 10;
+		
 		Debug.Log("Generating Grid:");
 		_tiles = new GameObject[sx,sz];
 		for(int x = 0; x < sx; x++) {
@@ -38,39 +43,35 @@ public class Game : MonoBehaviour {
 		for(int x = 0; x < sx; x++) {
 			for(int z = 0; z < sz; z++) {				
 				Node n = _tiles[x,z].GetComponent("Node") as Node;
-				if( (x + 1) < sx) n.adjacent.Add( _tiles[x+1,z].GetComponent("Node") as Node);
-				if( (z + 1) < sz ) n.adjacent.Add( _tiles[x,z+1].GetComponent("Node") as Node);
-				if( (x - 1) >= 0 ) n.adjacent.Add( _tiles[x-1,z].GetComponent("Node") as Node);
-				if( (z - 1) >= 0 ) n.adjacent.Add( _tiles[x,z-1].GetComponent("Node") as Node);
-				if( (x - 1) >= 0 && (z - 1) >= 0 ) n.adjacent.Add( _tiles[x-1,z-1].GetComponent("Node") as Node);
-				if( (x + 1) < sx && (z + 1) < sz ) n.adjacent.Add( _tiles[x+1,z+1].GetComponent("Node") as Node);
-				if( (x + 1) < sx && (z - 1) >= 0 ) n.adjacent.Add( _tiles[x+1,z-1].GetComponent("Node") as Node);
-				if( (x - 1) >= 0 && (z + 1) < sz ) n.adjacent.Add( _tiles[x-1,z+1].GetComponent("Node") as Node);	
+				if( (x - 1) >= 0 && (z + 1) < sz ) n.adjacent.Add( _tiles[x-1,z+1].GetComponent("Node") as Node);	//1
+				if( (z + 1) < sz ) n.adjacent.Add( _tiles[x,z+1].GetComponent("Node") as Node);						//2
+				if( (x + 1) < sx && (z + 1) < sz ) n.adjacent.Add( _tiles[x+1,z+1].GetComponent("Node") as Node);	//3
+				if( (x - 1) >= 0 ) n.adjacent.Add( _tiles[x-1,z].GetComponent("Node") as Node);						//4
+				if( (x + 1) < sx) n.adjacent.Add( _tiles[x+1,z].GetComponent("Node") as Node);						//5
+				if( (x - 1) >= 0 && (z - 1) >= 0 ) n.adjacent.Add( _tiles[x-1,z-1].GetComponent("Node") as Node);	//6
+				if( (z - 1) >= 0 ) n.adjacent.Add( _tiles[x,z-1].GetComponent("Node") as Node);						//7
+				if( (x + 1) < sx && (z - 1) >= 0 ) n.adjacent.Add( _tiles[x+1,z-1].GetComponent("Node") as Node);	//8
 			}					
 		}
 		
-		//TODO: Load Maze.
-		_start = _tiles[0,0].GetComponent("Node") as Node;
+		_start = _tiles[1,2].GetComponent("Node") as Node;
 		_start.Status = Node.START;
 		
-		Node end = _tiles[0,2].GetComponent("Node") as Node;
+		Node end = _tiles[5,2].GetComponent("Node") as Node;
 		end.Status = Node.END;
 		
-		Node obs = _tiles[1,1].GetComponent("Node") as Node;
+		Node obs = _tiles[3,1].GetComponent("Node") as Node;
 		obs.Status = Node.OBSTRUCTED;
 		
-		obs = _tiles[1,2].GetComponent("Node") as Node;
+		obs = _tiles[3,2].GetComponent("Node") as Node;
 		obs.Status = Node.OBSTRUCTED;
 		
-		obs = _tiles[1,3].GetComponent("Node") as Node;
-		obs.Status = Node.OBSTRUCTED;
-		
-		obs = _tiles[0,3].GetComponent("Node") as Node;
+		obs = _tiles[3,3].GetComponent("Node") as Node;
 		obs.Status = Node.OBSTRUCTED;
 		
 		Camera.main.transform.position = new Vector3( (float) (sx / 2), Camera.main.gameObject.transform.position.y,(float) -(sz / 10f));
 			
-		Find(0);
+		Find(1);
 	}
 	
 	void PreRender() {
@@ -113,17 +114,25 @@ public class Game : MonoBehaviour {
 					switch (n.Status) {
 					case Node.CLEAR:
 						if(n.Animated == true ) {
-							_tiles[x,z].renderer.material.color = Color.white;
+							_tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.3f);
 						} else {
-							if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
-							else _tiles[x,z].renderer.material.color = Color.cyan;
+							if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.5f);
+							else _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
 						}
 						break;
 					case Node.START:
-						_tiles[x,z].renderer.material.color = Color.blue;
+						if(n.Animated == true ) {
+							_tiles[x,z].renderer.material.color = new Color32(100,205,250,255);
+						} else {
+							_tiles[x,z].renderer.material.color = Color.blue;
+						}
 						break;	
 					case Node.END:
-						_tiles[x,z].renderer.material.color = Color.yellow;
+						if(n.Animated == true ) {
+							_tiles[x,z].renderer.material.color = new Color32(255,255,200,255);
+						} else {
+							_tiles[x,z].renderer.material.color = Color.yellow;
+						};
 						break;
 					case Node.OBSTRUCTED:
 						_tiles[x,z].renderer.material.color = Color.red;
@@ -131,6 +140,14 @@ public class Game : MonoBehaviour {
 					}
 				}
 			}
+		}
+		
+		if (_order.Count <= 0 && _path.Count > 0 && !Drawing) {
+			if(Debug.isDebugBuild) Debug.Log("Drawing Line");
+			GameObject t = GameObject.Find("LineRenderer");
+			
+			Drawing = true;
+			t.SendMessage("DrawPath",_path);
 		}
 	}
 	
@@ -141,27 +158,28 @@ public class Game : MonoBehaviour {
 		switch (_method) {
 			case 0:	//DFS
 				_found = depth.Find (_start);
+				_path = depth.GetPath ();
+				if (_found) _order = depth.GetOrder();
 				break;
 			case 1:	//BFS
-
-				break;
+				_found = breadth.Find (_start);
+				_path = breadth.GetPath ();
+				if (_found) _order = breadth.GetOrder();
+			break;
 			case 2:	//A*
-
+				
 				break;
 		}
 
 		//Search for end-node.
-		if (_found) {
-			_order = depth.GetOrder();
-		
+		if (_found) {		
 			if(Debug.isDebugBuild) {
-				string _paths = "";
-				List<Node> path = depth.GetPath ();
+				string _out = "";
 				
-				foreach (Node n in path) {
-					_paths += n.name + " ";
+				foreach (Node n in _path) {
+					_out += n.name + " ";
 				}
-				Debug.Log (_paths);
+				Debug.Log (_out);
 			}
 		} else {
 			if(Debug.isDebugBuild) {
