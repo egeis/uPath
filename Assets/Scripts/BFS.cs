@@ -4,8 +4,9 @@ using System.Collections.Generic;
 
 public class BFS : MonoBehaviour {
 	private List<Node> _path = new List<Node>();
+	private List<Node> _order = new List<Node>();
 	
-	public bool Search(Node _start) {
+	public bool Find(Node _start) {
 	
 		return false;
 	}
