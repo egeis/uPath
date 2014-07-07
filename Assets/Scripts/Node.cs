@@ -8,8 +8,9 @@ public class Node : MonoBehaviour {
 	public const int END = 3;
 	public const int CLEAR = 0;
 	public const int PATH = 4;
-	
-	public bool Visited = true;
+
+	public bool Visited = false;
+	public bool Animated = false;
 	public List<Node> adjacent = null; 
 		
 	public int Status {

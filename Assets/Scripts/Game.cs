@@ -8,6 +8,7 @@ public class Game : MonoBehaviour {
 	public int sz = 3;
 
 	private GameObject[,] _tiles;
+	private List<Node> _order = new List<Node>();
 	private Node _start;
 	
 	private DFS depth = new DFS();
@@ -16,11 +17,23 @@ public class Game : MonoBehaviour {
 	void Start () {
 		Debug.Log("Generating Grid:");
 		_tiles = new GameObject[sx,sz];
-		ResetTiles();
+		for(int x = 0; x < sx; x++) {
+			for(int z = 0; z < sz; z++) {
+				GameObject tile = Instantiate(Resources.Load("Prefabs/tile")) as GameObject;
+				tile.name = "Tile_"+x+"_"+z;
+				tile.transform.position = new Vector3( (float) x, 0, (float) z);
+				
+				Node n = tile.GetComponent("Node") as Node;
+				n.Visited = false;
+				n.Animated = false;
+				
+				_tiles[x,z] = tile;
+			}
+		}
 		
 		Debug.Log("Associating Grid:");
 		for(int x = 0; x < sx; x++) {
-			for(int z = 0; z < sz; z++) {
+			for(int z = 0; z < sz; z++) {				
 				Node n = _tiles[x,z].GetComponent("Node") as Node;
 				if( (x + 1) < sx) n.adjacent.Add( _tiles[x+1,z].GetComponent("Node") as Node);
 				if( (z + 1) < sz ) n.adjacent.Add( _tiles[x,z+1].GetComponent("Node") as Node);
@@ -29,7 +42,7 @@ public class Game : MonoBehaviour {
 				if( (x - 1) >= 0 && (z - 1) >= 0 ) n.adjacent.Add( _tiles[x-1,z-1].GetComponent("Node") as Node);
 				if( (x + 1) < sx && (z + 1) < sz ) n.adjacent.Add( _tiles[x+1,z+1].GetComponent("Node") as Node);
 				if( (x + 1) < sx && (z - 1) >= 0 ) n.adjacent.Add( _tiles[x+1,z-1].GetComponent("Node") as Node);
-				if( (x - 1) >= 0 && (z + 1) < sz ) n.adjacent.Add( _tiles[x-1,z+1].GetComponent("Node") as Node);
+				if( (x - 1) >= 0 && (z + 1) < sz ) n.adjacent.Add( _tiles[x-1,z+1].GetComponent("Node") as Node);	
 			}					
 		}
 		
@@ -54,75 +67,77 @@ public class Game : MonoBehaviour {
 		
 		Camera.main.transform.position = new Vector3( (float) (sx / 2), Camera.main.gameObject.transform.position.y,(float) -(sz / 10f));
 	
-		//Search Test
-		Search();
+		Time.timeScale = 0.23f;
+		
+		Find(0);
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		if (_order.Count > 0) {
+			_order[0].Animated = true;
+			_order.RemoveAt(0);
+		}
+		
 		for(int x = 0; x < sx; x++) {
 			for(int z = 0; z < sz; z++) {
 				Node n = _tiles[x,z].GetComponent("Node") as Node;
 				
 				switch (n.Status) {
 				case Node.CLEAR:
-					if(n.Visited == true) _tiles[x,z].renderer.material.color = new Color32(100,100,255,100);
-					else _tiles[x,z].renderer.material.color = Color.white;
+					if(n.Animated == true ) {
+						_tiles[x,z].renderer.material.color = Color.white;
+					} else {
+						if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
+						else _tiles[x,z].renderer.material.color = Color.cyan;
+					}
 					break;
 				case Node.START:
-					if(n.Visited == true) _tiles[x,z].renderer.material.color = new Color32(100,255,255,100);				
-					else _tiles[x,z].renderer.material.color = Color.green;
+					_tiles[x,z].renderer.material.color = Color.blue;
 					break;	
 				case Node.END:
-					if(n.Visited == true) _tiles[x,z].renderer.material.color = new Color32(200,200,200,100);				
-					else _tiles[x,z].renderer.material.color = Color.gray;
+					_tiles[x,z].renderer.material.color = Color.yellow;
 					break;
 				case Node.OBSTRUCTED:
-					if(n.Visited == true) _tiles[x,z].renderer.material.color = Color.black;	//Error!!!				
-					else _tiles[x,z].renderer.material.color = Color.red;
+					_tiles[x,z].renderer.material.color = Color.red;
 					break;		
 				}
-				
 			}
 		}
 	}
 	
-	public void ResetTiles() {
-		for(int x = 0; x < sx; x++) {
-			for(int z = 0; z < sz; z++) {
-				GameObject tile = Instantiate(Resources.Load("Prefabs/tile")) as GameObject;
-				tile.name = "Tile_"+x+"_"+z;
-				tile.transform.position = new Vector3( (float) x, 0, (float) z);
-				
-				Node n = tile.GetComponent("Node") as Node;
-				n.Status = Node.CLEAR;
-				n.Visited = false;
-				
-				_tiles[x,z] = tile;
-			}
+	public void Find(int _method = 0) {	
+		bool _found = false;
+
+		switch (_method) {
+			case 0:	//DFS
+				_found = depth.Find (_start);
+				break;
+			case 1:	//BFS
+
+				break;
+			case 2:	//A*
+
+				break;
 		}
-	}
-	
-	public void Search() {
-		//Reset Visited to FALSE.
-		for(int x = 0; x < sx; x++) {
-			for(int z = 0; z < sz; z++) {
-				Node n = _tiles[x,z].GetComponent("Node") as Node;
-				n.Visited = false;
-			}
-		}
-		
+
 		//Search for end-node.
-		bool _found = depth.Search( _start );
-		if(_found) {
-			string _paths = "";
-			List<Node> path = depth.GetPath();
-			
-			foreach(Node n in path) {
-				_paths += n.name + " ";
+		if (_found) {
+			_order = depth.GetOrder();
+		
+			if(Debug.isDebugBuild) {
+				string _paths = "";
+				List<Node> path = depth.GetPath ();
+				
+				foreach (Node n in path) {
+					_paths += n.name + " ";
+				}
+				Debug.Log (_paths);
 			}
-			
-			Debug.Log(_paths);
+		} else {
+			if(Debug.isDebugBuild) {
+				Debug.Log("Search: Path Could not be found!");
+			}
 		}
 	}
 }
