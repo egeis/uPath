@@ -11,6 +11,7 @@ public class Game : MonoBehaviour {
 	private List<Node> _order = new List<Node>();
 	private List<Node> _path = new List<Node>();
 	private Node _start;
+	private Node _goal;
 	
 	private float _period = 0.1f;
 	private float _time = 0.0f;
@@ -18,6 +19,7 @@ public class Game : MonoBehaviour {
 	
 	private DFS depth = new DFS();
 	private BFS breadth = new BFS();
+	private AStar astar = new AStar();
 
 	// Use this for initialization
 	void Start () {
@@ -34,6 +36,8 @@ public class Game : MonoBehaviour {
 				Node n = tile.GetComponent("Node") as Node;
 				n.Visited = false;
 				n.Animated = false;
+				n.g = 0;
+				n.h = 0;
 				
 				_tiles[x,z] = tile;
 			}
@@ -54,11 +58,12 @@ public class Game : MonoBehaviour {
 			}					
 		}
 		
+		//TODO: Create Maps Sets and Load them.
 		_start = _tiles[1,2].GetComponent("Node") as Node;
 		_start.Status = Node.START;
 		
-		Node end = _tiles[5,2].GetComponent("Node") as Node;
-		end.Status = Node.END;
+		_goal = _tiles[5,3].GetComponent("Node") as Node;
+		_goal.Status = Node.END;
 		
 		Node obs = _tiles[3,1].GetComponent("Node") as Node;
 		obs.Status = Node.OBSTRUCTED;
@@ -71,7 +76,7 @@ public class Game : MonoBehaviour {
 		
 		Camera.main.transform.position = new Vector3( (float) (sx / 2), Camera.main.gameObject.transform.position.y,(float) -(sz / 10f));
 			
-		Find(1);
+		Find(2);
 	}
 	
 	void PreRender() {
@@ -167,7 +172,9 @@ public class Game : MonoBehaviour {
 				if (_found) _order = breadth.GetOrder();
 			break;
 			case 2:	//A*
-				
+				_found = astar.Find(_start, _goal);
+				_path = astar.GetPath ();
+				if (_found) _order = astar.GetOrder();
 				break;
 		}
 

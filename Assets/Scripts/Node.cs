@@ -9,10 +9,13 @@ public class Node : MonoBehaviour {
 	public const int CLEAR = 0;
 	public const int PATH = 4;
 
+	public int g = 0;
+	public int h = 0;
+
 	public bool Visited = false;
 	public bool Animated = false;
 	public List<Node> adjacent = null; 	//Used for ALL searches.
-	public Node parent = null;					//Used for BFS.
+	public Node parent = null;			//Used for BFS.
 		
 	public int Status {
 		get { return _status; }
