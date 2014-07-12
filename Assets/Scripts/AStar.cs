@@ -24,7 +24,6 @@ public class AStar {
 		_open.Enqueue(_start);
 		
 		if(Debug.isDebugBuild) Debug.Log("Count: "+_open.Count);
-		//if(Debug.isDebugBuild) Debug.Log("Distance" + Distance (_start, _target) );
 		
 		while(_open.Count > 0) {
 			Node n = _open.Dequeue();
@@ -32,41 +31,44 @@ public class AStar {
 			
 			if (n.Status == Node.END) {
 				Node t = n;
+				
 				while(t != null) {
 					_path.Add(t);
 					t = t.parent;
 				}
-				
+								
 				_path.Reverse();
 				return true;
 			}
-						
+			
 			for (int i = 0; i < n.adjacent.Count; i++) {
-				if(_close.Contains(n)) continue;
-				if (n.adjacent [i].IsValid ()) {
-					n.adjacent[i].parent = n;
+				Node c = n.adjacent[i];
+				
+				if (c.IsValid ()) {
+					c.parent = n;
+					c.h = Distance(c, _target);
 					
-					int dist = Distance(n.adjacent[i], _target);
+					int g = c.g;
 					
 					switch(i) {
-					case 1:
-					case 3:
-					case 6:
-					case 8:
-						n.adjacent[i].g = 14 + n.g;
+					case 1:case 3:case 6:case 8:
+						g += 14;
 						break;
-					case 2:
-					case 4:
-					case 5:
-					case 7:
-						n.adjacent[i].g = 10 + n.g;
+					case 2:case 4:case 5:case 7:
+						g += 10;
 						break;
 					}
 					
-					if(n.adjacent[i] == 0) n.adjacent[i].g = dist + n.g;
+					if(_close.Contains(c)) continue;
+
+					if(_open.Contains(c) ) {
+						if(g < c.g ) {
+							c.g = g;
+						}
+					} else {
+						_open.Enqueue(c);
+					}
 					
-					
-					_open.Enqueue(n.adjacent[i]);
 				}
 			}
 		}
