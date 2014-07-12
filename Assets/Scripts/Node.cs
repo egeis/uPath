@@ -11,6 +11,7 @@ public class Node : MonoBehaviour {
 
 	public int g = 0;
 	public int h = 0;
+	public int f = 0;
 
 	public bool Visited = false;
 	public bool Animated = false;

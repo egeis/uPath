@@ -19,36 +19,32 @@ public class AStar {
 
 	public bool Find(Node _start, Node _target) {
 		_start.Visited = true;
-		_start.g = Distance (_start, _target);
-		
+		_start.g = Distance (_start, _target);	
 		_open.Enqueue(_start);
-		
-		if(Debug.isDebugBuild) Debug.Log("Count: "+_open.Count);
-		
+						
 		while(_open.Count > 0) {
-			Node n = _open.Dequeue();
-			_close.Enqueue(n);
-			
-			if (n.Status == Node.END) {
-				Node t = n;
-				
-				while(t != null) {
-					_path.Add(t);
-					t = t.parent;
+			Node c = _open.Dequeue();
+			c.Visited = true;
+
+			//End Node Found
+			if(c.Status == Node.END ) {		
+				//Backtrack using Parent for path.
+				while(c != null) {
+					_path.Add(c);
+					c = c.parent;
 				}
-								
-				_path.Reverse();
-				return true;
-			}
-			
-			for (int i = 0; i < n.adjacent.Count; i++) {
-				Node c = n.adjacent[i];
 				
-				if (c.IsValid ()) {
-					c.parent = n;
-					c.h = Distance(c, _target);
-					
-					int g = c.g;
+				_path.Reverse();	//Reverse the Path from END->START to START->END 				
+				return true;
+			} 
+			_close.Enqueue(c);
+			
+			for (int i = 0; i < c.adjacent.Count; i++) {
+				Node n = c.adjacent[i];
+
+				if (n.Status != Node.OBSTRUCTED) {		//If the node is NOT a wall or Null
+					int h = Distance(n, _target);
+					int g = n.g;
 					
 					switch(i) {
 					case 1:case 3:case 6:case 8:
@@ -59,14 +55,21 @@ public class AStar {
 						break;
 					}
 					
-					if(_close.Contains(c)) continue;
+					if(_close.Contains(n)) continue;
 
 					if(_open.Contains(c) ) {
-						if(g < c.g ) {
-							c.g = g;
+						if(g < n.g ) {
+							n.parent = c;
+							n.h = h;
+							n.g = g;
+							n.f = n.g + n.h;
 						}
 					} else {
-						_open.Enqueue(c);
+						n.parent = c;
+						n.h = h;
+                        n.g = g;
+						n.f = n.g + n.h;
+						_open.Enqueue(n);
 					}
 					
 				}
