@@ -1,17 +1,18 @@
 using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Node : MonoBehaviour {
+public class Node : MonoBehaviour, IComparable {
 	public const int OBSTRUCTED = 1;
 	public const int START = 2;
 	public const int END = 3;
 	public const int CLEAR = 0;
 	public const int PATH = 4;
 
-	public int g = 0;
-	public int h = 0;
-	public int f = 0;
+	public int G = 0;
+	public int H = 0;
+	public int F = 0;
 
 	public bool Visited = false;
 	public bool Animated = false;
@@ -36,6 +37,15 @@ public class Node : MonoBehaviour {
 	 */	
 	public bool IsValid() {
 		return !Visited && (_status != Node.OBSTRUCTED); 
+	}
+	
+	/**
+	 *	Compare this F to another F
+	 */
+	public int CompareTo(Node n) {
+		if(n == null) return 1;
+		
+		return this.F.CompareTo(n.F);
 	}
 
 	private int _status = 0;

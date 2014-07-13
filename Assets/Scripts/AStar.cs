@@ -14,12 +14,12 @@ public class AStar {
 		int z = (int) Mathf.Abs( (float) (_start.Z - _target.Z));
 		int s = (x < z) ? x : z;
 		return (s * 14) + ( (int) Mathf.Abs( (float) (x - z)) * 10);
-		//return x + z;
 	}
 
 	public bool Find(Node _start, Node _target) {
 		_start.Visited = true;
-		_start.g = Distance (_start, _target);	
+		_start.H = Distance (_start, _target);	
+		_start.G = 0;
 		_open.Enqueue(_start);
 						
 		while(_open.Count > 0) {
@@ -44,7 +44,7 @@ public class AStar {
 
 				if (n.Status != Node.OBSTRUCTED) {		//If the node is NOT a wall or Null
 					int h = Distance(n, _target);
-					int g = n.g;
+					int g = n.G;
 					
 					switch(i) {
 					case 1:case 3:case 6:case 8:
@@ -58,17 +58,17 @@ public class AStar {
 					if(_close.Contains(n)) continue;
 
 					if(_open.Contains(c) ) {
-						if(g < n.g ) {
+						if(g < n.G ) {
 							n.parent = c;
-							n.h = h;
-							n.g = g;
-							n.f = n.g + n.h;
+							n.H = h;
+							n.G = g;
+							n.F = n.G + n.H;
 						}
 					} else {
 						n.parent = c;
-						n.h = h;
-                        n.g = g;
-						n.f = n.g + n.h;
+						n.H = h;
+                        n.G = g;
+						n.F = n.G + n.H;
 						_open.Enqueue(n);
 					}
 					

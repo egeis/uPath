@@ -36,8 +36,9 @@ public class Game : MonoBehaviour {
 				Node n = tile.GetComponent("Node") as Node;
 				n.Visited = false;
 				n.Animated = false;
-				n.g = 0;
-				n.h = 0;
+				n.G = 0;
+				n.H = 0;
+				n.F = 0;
 				
 				_tiles[x,z] = tile;
 			}
@@ -62,7 +63,7 @@ public class Game : MonoBehaviour {
 		_start = _tiles[1,2].GetComponent("Node") as Node;
 		_start.Status = Node.START;
 		
-		_goal = _tiles[5,3].GetComponent("Node") as Node;
+		_goal = _tiles[5,2].GetComponent("Node") as Node;
 		_goal.Status = Node.END;
 		
 		Node obs = _tiles[3,1].GetComponent("Node") as Node;
