@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Node : MonoBehaviour, IComparable {
+public class Node : MonoBehaviour, IComparable<Node> {
 	public const int OBSTRUCTED = 1;
 	public const int START = 2;
 	public const int END = 3;
@@ -44,7 +44,7 @@ public class Node : MonoBehaviour, IComparable {
 	 */
 	public int CompareTo(Node n) {
 		if(n == null) return 1;
-		
+
 		return this.F.CompareTo(n.F);
 	}
 

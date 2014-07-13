@@ -63,6 +63,8 @@ public class AStar {
 							n.H = h;
 							n.G = g;
 							n.F = n.G + n.H;
+							
+							//TODO: Reheap Queue
 						}
 					} else {
 						n.parent = c;
