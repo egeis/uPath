@@ -6,7 +6,8 @@ public class AStar {
 	private List<Node> _path = new List<Node>();
 	private List<Node> _order = new List<Node>();
 	
-	private Queue<Node> _open = new Queue<Node>();
+	//private Queue<Node> _open = new Queue<Node>();
+	private List<Node> _open = new List<Node>();
 	private Queue<Node> _close = new Queue<Node>();
 
 	private int Distance(Node _start, Node _target) {
@@ -20,10 +21,11 @@ public class AStar {
 		_start.Visited = true;
 		_start.H = Distance (_start, _target);	
 		_start.G = 0;
-		_open.Enqueue(_start);
+		_open.Add(_start);
 						
 		while(_open.Count > 0) {
-			Node c = _open.Dequeue();
+			Node c = _open[0];
+			_open.RemoveAt(0);
 			c.Visited = true;
 
 			//End Node Found
@@ -63,19 +65,19 @@ public class AStar {
 							n.H = h;
 							n.G = g;
 							n.F = n.G + n.H;
-							
-							//TODO: Reheap Queue
 						}
 					} else {
 						n.parent = c;
 						n.H = h;
                         n.G = g;
 						n.F = n.G + n.H;
-						_open.Enqueue(n);
+						_open.Add(n);
 					}
 					
 				}
 			}
+			
+			_open.Sort();
 		}
 		
 		return false;

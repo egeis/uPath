@@ -45,7 +45,7 @@ public class Node : MonoBehaviour, IComparable<Node> {
 	public int CompareTo(Node n) {
 		if(n == null) return 1;
 
-		return this.F.CompareTo(n.F);
+		return this.H.CompareTo(n.H);
 	}
 
 	private int _status = 0;
