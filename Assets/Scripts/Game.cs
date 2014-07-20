@@ -15,7 +15,6 @@ public class Game : MonoBehaviour {
 	
 	private float _period = 0.1f;
 	private float _time = 0.0f;
-	public bool Drawing = false;
 	
 	private DFS depth = new DFS();
 	private BFS breadth = new BFS();
@@ -148,11 +147,9 @@ public class Game : MonoBehaviour {
 			}
 		}
 		
-		if (_order.Count <= 0 && _path.Count > 0 && !Drawing) {
+		if (_order.Count <= 0 && _path.Count > 0) {
 			if(Debug.isDebugBuild) Debug.Log("Drawing Line");
 			GameObject t = GameObject.Find("LineRenderer");
-			
-			Drawing = true;
 			t.SendMessage("DrawPath",_path);
 		}
 	}
@@ -179,8 +176,12 @@ public class Game : MonoBehaviour {
 				break;
 		}
 
+		GameObject t = GameObject.Find("GUI");
+
 		//Search for end-node.
 		if (_found) {		
+			t.SendMessage("SetMessage", "A path was found!");
+			
 			if(Debug.isDebugBuild) {
 				string _out = "";
 				
@@ -189,7 +190,11 @@ public class Game : MonoBehaviour {
 				}
 				Debug.Log (_out);
 			}
+			
+			
 		} else {
+			t.SendMessage("SetMessage", "A path could not be found!");
+			
 			if(Debug.isDebugBuild) {
 				Debug.Log("Search: Path Could not be found!");
 			}
@@ -204,14 +209,22 @@ public class Game : MonoBehaviour {
 	//Resets the grid to use the same map with a different search algorithm.
 	public void TriggerReset() {
 		GameObject t = GameObject.Find("LineRenderer");
-		t.SendMessage("TriggerClear",_path);
+		t.SendMessage("TriggerClear");
 		
+		_order = new List<Node>();
+		_path = new List<Node>();
+		
+		depth = new DFS();
+		breadth = new BFS();
+		astar = new AStar();
+				
 		Debug.Log("Reseting Grid:");
 		for(int x = 0; x < sx; x++) {
 			for(int z = 0; z < sz; z++) {
 				Node n = _tiles[x,z].GetComponent("Node") as Node;
 				n.Visited = false;
 				n.Animated = false;
+				n.parent = null;
 				n.G = 0;
 				n.H = 0;
 				n.F = 0;
