@@ -75,10 +75,10 @@ public class Game : MonoBehaviour {
 		obs = _tiles[3,3].GetComponent("Node") as Node;
 		obs.Status = Node.OBSTRUCTED;
 		
-		Camera.main.transform.position = new Vector3( (float) (sx / 2), Camera.main.gameObject.transform.position.y,(float) -(sz / 10f));
-			
-		Find(2);
+		Camera.main.transform.position = new Vector3( (float) (sx / 2), Camera.main.gameObject.transform.position.y,(float) -(sz / 10f));		
 	}
+	
+	
 	
 	void PreRender() {
 		for(int x = 0; x < sx; x++) {
@@ -194,5 +194,29 @@ public class Game : MonoBehaviour {
 				Debug.Log("Search: Path Could not be found!");
 			}
 		}
+	}
+	
+	//Triggers the Search
+	public void TriggerSearch(int method) {
+		Find (method);
+	}
+	
+	//Resets the grid to use the same map with a different search algorithm.
+	public void TriggerReset() {
+		GameObject t = GameObject.Find("LineRenderer");
+		t.SendMessage("TriggerClear",_path);
+		
+		Debug.Log("Reseting Grid:");
+		for(int x = 0; x < sx; x++) {
+			for(int z = 0; z < sz; z++) {
+				Node n = _tiles[x,z].GetComponent("Node") as Node;
+				n.Visited = false;
+				n.Animated = false;
+				n.G = 0;
+				n.H = 0;
+				n.F = 0;
+			}
+		}
+	
 	}
 }

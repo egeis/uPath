@@ -22,7 +22,7 @@ public class DrawLine : MonoBehaviour {
 			line = GetComponent<LineRenderer>();
 			line.SetVertexCount(_paths.Count);
 			line.SetWidth(0.45f, 0.45f);
-			
+						
 			Node n1 = _paths[i-1].GetComponent("Node") as Node;
 			Node n2 = _paths[i].GetComponent("Node") as Node;
 			
@@ -57,6 +57,11 @@ public class DrawLine : MonoBehaviour {
 		for( int a = i; a < _paths.Count; a++) {
 			line.SetPosition(a, pos);
 		}
+	}
+	
+	//Deletes the current line.
+	void TriggerClear() {
+		line.SetVertexCount(0);
 	}
 	
 	// Update is called once per frame
