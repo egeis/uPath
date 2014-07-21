@@ -4,20 +4,26 @@ using System.Collections;
 public class Controller_GUI : MonoBehaviour {
 
 	private int _searchMethod = 0;
+	private int _mapSelection = 0;
+	private int _currentMap = 0;
 	private bool _triggerReset = false;
 	private bool _triggerSearch = false;
-	private string _message = "";
+	private bool _triggerLoad = false;
+	private string _message = "Press Search to Start the search.";
 	private GUIStyle style = new GUIStyle();
+	private GUIStyle styleMessages = new GUIStyle();
 	private readonly string[] SEARCH_TOOLBAR = {"DFS", "BFS", "A*"};
+	private readonly string[] MAP_TOOLBAR = {"Searchspace0", "Searchspace1", "Searchspace2", "Searchspace3"};
+	private GameObject _game;
+	private FileBrowser fb;
 
 	// Use this for initialization
 	void Start () {
 		style.normal.textColor = Color.white;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+		styleMessages.normal.textColor = Color.white;
+		styleMessages.fontStyle = FontStyle.Bold;
+		
+		_game = GameObject.Find("Game");
 	}
 	
 	public void SetMessage(string message) {
@@ -34,25 +40,29 @@ public class Controller_GUI : MonoBehaviour {
 		GUILayout.EndHorizontal ();
 		
 		GUILayout.BeginHorizontal ();
-		
+		_mapSelection = GUILayout.Toolbar(_mapSelection, MAP_TOOLBAR);
 		GUILayout.EndHorizontal ();
 		
 		GUILayout.BeginHorizontal ();
+		GUILayout.Label("Messages:", styleMessages, GUILayout.Width(GUI.skin.label.CalcSize(new GUIContent("Messages:")).x));
+		GUILayout.Space(10f);
 		GUILayout.Label(_message, style);
 		GUILayout.EndHorizontal ();
 		
 		GUILayout.EndArea ();
 		
 		if (GUI.changed) {
-			GameObject t = GameObject.Find("Game");
 			if(_triggerReset) {
-				t.SendMessage("TriggerReset");
-				_message = "";
+				_game.SendMessage("TriggerReset");
+				_message = "Reseting Search.";
 			}
 			if(_triggerSearch) {
-				t.SendMessage("TriggerReset"); 
-				t.SendMessage("TriggerSearch", _searchMethod );
-				_message = ""; 
+				_game.SendMessage("TriggerReset"); 
+				_game.SendMessage("TriggerSearch", _searchMethod );
+			}
+			if(_mapSelection != _currentMap) {
+				_currentMap = _mapSelection;
+				_game.SendMessage("TriggerLoadMap", _mapSelection); 
 			}
 		}	
 	}

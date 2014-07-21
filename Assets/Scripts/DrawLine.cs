@@ -69,19 +69,6 @@ public class DrawLine : MonoBehaviour {
 		}
 	}
 	
-	//Deletes the current line.
-	void TriggerClear() {
-		bool _start = false;
-		
-		while(isDrawing) { /*Do Nothing*/ }
-		
-		line.SetVertexCount(0);
-		int i = 1;
-		float _counter = 0;
-		float _dist = 0;
-		_paths = new List<Node>();
-	}
-	
 	// Update is called once per frame
 	void Update () {
 		isDrawing = true;

@@ -8,6 +8,8 @@ public class Game : MonoBehaviour {
 	public int sz = 3;
 
 	private GameObject[,] _tiles;
+	private GameObject lineRenderer;
+	
 	private List<Node> _order = new List<Node>();
 	private List<Node> _path = new List<Node>();
 	private Node _start;
@@ -15,14 +17,37 @@ public class Game : MonoBehaviour {
 	
 	private float _period = 0.1f;
 	private float _time = 0.0f;
+	private bool _loading = true;
 	
 	private DFS depth = new DFS();
 	private BFS breadth = new BFS();
 	private AStar astar = new AStar();
+	
+	private string[] _maps = new string[4];
 
 	// Use this for initialization
 	void Start () {
 		_time = _period * 10;
+		
+		for(int x = 0; x < 4; x++) {
+			string path = "searchspace"+x.ToString();
+			Debug.Log(path);
+			TextAsset a = (TextAsset) Resources.Load (path, typeof(TextAsset));
+			Debug.Log(a.text);
+			
+			_maps[x] = a.text;
+		}
+		
+		LoadMap(0);
+	}
+	
+	public void LoadMap(int map) {
+		_loading = true;
+		string[] rows = _maps[map].Split('\n');
+		string[] values = rows[0].Split(' ');
+		
+		sx = int.Parse(values[0]);
+		sz = int.Parse(values[1]);
 		
 		Debug.Log("Generating Grid:");
 		_tiles = new GameObject[sx,sz];
@@ -58,26 +83,37 @@ public class Game : MonoBehaviour {
 			}					
 		}
 		
-		//TODO: Create Maps Sets and Load them.
-		_start = _tiles[1,2].GetComponent("Node") as Node;
-		_start.Status = Node.START;
+		int a = 1;
+		foreach(string line in rows)
+		{
+			values = line.Split(' ');
+			Node _obs = null;
+			
+			switch(a) {
+				case 1:	//Size, Skipping...
+					break;
+				case 2: //Start
+					_start = _tiles[ int.Parse(values[0]), int.Parse(values[1])].GetComponent("Node") as Node;
+					_start.Status = Node.START;
+					break;
+				case 3: //End
+					_goal = _tiles[int.Parse(values[0]), int.Parse(values[1])].GetComponent("Node") as Node;
+					_goal.Status = Node.END;	
+					break;
+				default://Obstruction
+					_obs = _tiles[ int.Parse(values[0]), int.Parse(values[1])].GetComponent("Node") as Node;
+					_obs.Status = Node.OBSTRUCTED;
+					break;
+			}
+			
+			a++;
+		}
 		
-		_goal = _tiles[5,2].GetComponent("Node") as Node;
-		_goal.Status = Node.END;
-		
-		Node obs = _tiles[3,1].GetComponent("Node") as Node;
-		obs.Status = Node.OBSTRUCTED;
-		
-		obs = _tiles[3,2].GetComponent("Node") as Node;
-		obs.Status = Node.OBSTRUCTED;
-		
-		obs = _tiles[3,3].GetComponent("Node") as Node;
-		obs.Status = Node.OBSTRUCTED;
+		lineRenderer = Instantiate(Resources.Load("MyPrefab")) as GameObject; 
 		
 		Camera.main.transform.position = new Vector3( (float) (sx / 2), Camera.main.gameObject.transform.position.y,(float) -(sz / 10f));		
+		_loading = false;
 	}
-	
-	
 	
 	void PreRender() {
 		for(int x = 0; x < sx; x++) {
@@ -107,50 +143,51 @@ public class Game : MonoBehaviour {
 		if(Time.time > _time) {
 			_time += _period;
 			
-			if (_order.Count > 0) {
-				_order[0].Animated = true;
-				_order.RemoveAt(0);
-			}
-			
-			for(int x = 0; x < sx; x++) {
-				for(int z = 0; z < sz; z++) {
-					Node n = _tiles[x,z].GetComponent("Node") as Node;
-					
-					switch (n.Status) {
-					case Node.CLEAR:
-						if(n.Animated == true ) {
-							_tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.3f);
-						} else {
-							if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.5f);
-							else _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
+			if(!_loading) {
+				if (_order.Count > 0) {
+					_order[0].Animated = true;
+					_order.RemoveAt(0);
+				}
+				
+				for(int x = 0; x < sx; x++) {
+					for(int z = 0; z < sz; z++) {
+						Node n = _tiles[x,z].GetComponent("Node") as Node;
+						
+						switch (n.Status) {
+						case Node.CLEAR:
+							if(n.Animated == true ) {
+								_tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.3f);
+							} else {
+								if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.5f);
+								else _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
+							}
+							break;
+						case Node.START:
+							if(n.Animated == true ) {
+								_tiles[x,z].renderer.material.color = new Color32(100,205,250,255);
+							} else {
+								_tiles[x,z].renderer.material.color = Color.blue;
+							}
+							break;	
+						case Node.END:
+							if(n.Animated == true ) {
+								_tiles[x,z].renderer.material.color = new Color32(255,255,200,255);
+							} else {
+								_tiles[x,z].renderer.material.color = Color.yellow;
+							};
+							break;
+						case Node.OBSTRUCTED:
+							_tiles[x,z].renderer.material.color = Color.red;
+							break;		
 						}
-						break;
-					case Node.START:
-						if(n.Animated == true ) {
-							_tiles[x,z].renderer.material.color = new Color32(100,205,250,255);
-						} else {
-							_tiles[x,z].renderer.material.color = Color.blue;
-						}
-						break;	
-					case Node.END:
-						if(n.Animated == true ) {
-							_tiles[x,z].renderer.material.color = new Color32(255,255,200,255);
-						} else {
-							_tiles[x,z].renderer.material.color = Color.yellow;
-						};
-						break;
-					case Node.OBSTRUCTED:
-						_tiles[x,z].renderer.material.color = Color.red;
-						break;		
 					}
 				}
-			}
-		}
 		
-		if (_order.Count <= 0 && _path.Count > 0) {
-			if(Debug.isDebugBuild) Debug.Log("Drawing Line");
-			GameObject t = GameObject.Find("LineRenderer");
-			t.SendMessage("DrawPath",_path);
+				if (_order.Count <= 0 && _path.Count > 0) {
+					GameObject t = GameObject.Find("LineRenderer");
+					t.SendMessage("DrawPath",_path);
+				}
+			}
 		}
 	}
 	
@@ -208,6 +245,7 @@ public class Game : MonoBehaviour {
 	
 	//Resets the grid to use the same map with a different search algorithm.
 	public void TriggerReset() {
+		//TODO DESTROY LineRenderer....
 		GameObject t = GameObject.Find("LineRenderer");
 		t.SendMessage("TriggerClear");
 		
