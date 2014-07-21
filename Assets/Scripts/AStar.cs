@@ -33,6 +33,7 @@ public class AStar {
 				//Backtrack using Parent for path.
 				while(c != null) {
 					_path.Add(c);
+					c.Path = true;
 					c = c.parent;
 				}
 				

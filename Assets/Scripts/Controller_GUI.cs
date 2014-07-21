@@ -15,7 +15,6 @@ public class Controller_GUI : MonoBehaviour {
 	private readonly string[] SEARCH_TOOLBAR = {"DFS", "BFS", "A*"};
 	private readonly string[] MAP_TOOLBAR = {"Searchspace0", "Searchspace1", "Searchspace2", "Searchspace3"};
 	private GameObject _game;
-	private FileBrowser fb;
 
 	// Use this for initialization
 	void Start () {
@@ -28,6 +27,12 @@ public class Controller_GUI : MonoBehaviour {
 	
 	public void SetMessage(string message) {
 		_message = message;
+	}
+	
+	void Update() {
+		if (Input.GetKeyDown(KeyCode.Escape)) {
+			Application.Quit();
+		}
 	}
 	
 	//Rendering and Handling GUI Events several times per frame.
@@ -62,7 +67,8 @@ public class Controller_GUI : MonoBehaviour {
 			}
 			if(_mapSelection != _currentMap) {
 				_currentMap = _mapSelection;
-				_game.SendMessage("TriggerLoadMap", _mapSelection); 
+				_game.SendMessage("TriggerReset");
+				_game.SendMessage("LoadMap", _mapSelection); 
 			}
 		}	
 	}

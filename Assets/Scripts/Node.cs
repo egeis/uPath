@@ -15,7 +15,7 @@ public class Node : MonoBehaviour, IComparable<Node> {
 	public int F = 0;
 
 	public bool Visited = false;
-	public bool Animated = false;
+	public bool Path = false;
 	public List<Node> adjacent = null; 	//Used for ALL searches.
 	public Node parent = null;			//Used for BFS.
 		

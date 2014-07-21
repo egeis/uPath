@@ -11,9 +11,7 @@ public class BFS {
 		_start.Visited = true;
 		_order.Add (_start);
 		_queue.Enqueue(_start);
-		
-		if(Debug.isDebugBuild) Debug.Log(_queue.Count);
-		
+				
 		while(_queue.Count > 0) {
 			Node n = _queue.Dequeue();
 			
@@ -21,6 +19,7 @@ public class BFS {
 				Node t = n;
 				while(t != null) {
 					_path.Add(t);
+					t.Path = true;
 					t = t.parent;
 				}
 				_path.Reverse();

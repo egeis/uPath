@@ -8,16 +8,14 @@ public class Game : MonoBehaviour {
 	public int sz = 3;
 
 	private GameObject[,] _tiles;
-	private GameObject lineRenderer;
 	
 	private List<Node> _order = new List<Node>();
 	private List<Node> _path = new List<Node>();
 	private Node _start;
 	private Node _goal;
 	
-	private float _period = 0.1f;
-	private float _time = 0.0f;
 	private bool _loading = true;
+	private bool _canDestroy = false;
 	
 	private DFS depth = new DFS();
 	private BFS breadth = new BFS();
@@ -26,9 +24,7 @@ public class Game : MonoBehaviour {
 	private string[] _maps = new string[4];
 
 	// Use this for initialization
-	void Start () {
-		_time = _period * 10;
-		
+	void Start () {		
 		for(int x = 0; x < 4; x++) {
 			string path = "searchspace"+x.ToString();
 			Debug.Log(path);
@@ -38,11 +34,22 @@ public class Game : MonoBehaviour {
 			_maps[x] = a.text;
 		}
 		
-		LoadMap(0);
+		LoadMap(0); //First Load
 	}
 	
 	public void LoadMap(int map) {
 		_loading = true;
+		
+		if(_canDestroy) {
+			Debug.Log("Destroying Grid:");
+			for(int x = 0; x < sx; x++) {
+				for(int z = 0; z < sz; z++) {
+					GameObject tile = _tiles[x,z];
+					Destroy(tile);
+				}
+			}
+		}
+		
 		string[] rows = _maps[map].Split('\n');
 		string[] values = rows[0].Split(' ');
 		
@@ -53,16 +60,16 @@ public class Game : MonoBehaviour {
 		_tiles = new GameObject[sx,sz];
 		for(int x = 0; x < sx; x++) {
 			for(int z = 0; z < sz; z++) {
-				GameObject tile = Instantiate(Resources.Load("Prefabs/tile")) as GameObject;
+				GameObject tile = Instantiate(Resources.Load("tile")) as GameObject;
 				tile.name = "Tile_"+x+"_"+z;
 				tile.transform.position = new Vector3( (float) x, 0, (float) z);
 				
 				Node n = tile.GetComponent("Node") as Node;
 				n.Visited = false;
-				n.Animated = false;
 				n.G = 0;
 				n.H = 0;
 				n.F = 0;
+				n.Path = false;
 				
 				_tiles[x,z] = tile;
 			}
@@ -109,83 +116,35 @@ public class Game : MonoBehaviour {
 			a++;
 		}
 		
-		lineRenderer = Instantiate(Resources.Load("MyPrefab")) as GameObject; 
-		
 		Camera.main.transform.position = new Vector3( (float) (sx / 2), Camera.main.gameObject.transform.position.y,(float) -(sz / 10f));		
 		_loading = false;
-	}
-	
-	void PreRender() {
-		for(int x = 0; x < sx; x++) {
-			for(int z = 0; z < sz; z++) {
-				Node n = _tiles[x,z].GetComponent("Node") as Node;
-				
-				switch (n.Status) {
-				case Node.CLEAR:
-					_tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
-					break;
-				case Node.START:
-					_tiles[x,z].renderer.material.color = Color.blue;
-					break;	
-				case Node.END:
-					_tiles[x,z].renderer.material.color = Color.yellow;
-					break;
-				case Node.OBSTRUCTED:
-					_tiles[x,z].renderer.material.color = Color.red;
-					break;		
-				}
-			}
-		}
+		_canDestroy = true;
 	}
 	
 	// Update is called once per frame
-	void Update () {
-		if(Time.time > _time) {
-			_time += _period;
-			
-			if(!_loading) {
-				if (_order.Count > 0) {
-					_order[0].Animated = true;
-					_order.RemoveAt(0);
-				}
-				
-				for(int x = 0; x < sx; x++) {
-					for(int z = 0; z < sz; z++) {
-						Node n = _tiles[x,z].GetComponent("Node") as Node;
-						
-						switch (n.Status) {
-						case Node.CLEAR:
-							if(n.Animated == true ) {
-								_tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.3f);
-							} else {
-								if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.5f);
-								else _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
-							}
-							break;
-						case Node.START:
-							if(n.Animated == true ) {
-								_tiles[x,z].renderer.material.color = new Color32(100,205,250,255);
-							} else {
-								_tiles[x,z].renderer.material.color = Color.blue;
-							}
-							break;	
-						case Node.END:
-							if(n.Animated == true ) {
-								_tiles[x,z].renderer.material.color = new Color32(255,255,200,255);
-							} else {
-								_tiles[x,z].renderer.material.color = Color.yellow;
-							};
-							break;
-						case Node.OBSTRUCTED:
-							_tiles[x,z].renderer.material.color = Color.red;
-							break;		
-						}
+	void Update () {	
+		if(!_loading) {
+			for(int x = 0; x < sx; x++) {
+				for(int z = 0; z < sz; z++) {
+					Node n = _tiles[x,z].GetComponent("Node") as Node;
+																																								
+					switch (n.Status) {
+					case Node.CLEAR:
+						if(n.Path) _tiles[x,z].renderer.material.color = Color.white;
+						else if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.5f);
+						else _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
+						break;
+					case Node.START:
+						_tiles[x,z].renderer.material.color = Color.blue;
+						break;	
+					case Node.END:
+						_tiles[x,z].renderer.material.color = Color.yellow;
+						break;
+					case Node.OBSTRUCTED:
+						_tiles[x,z].renderer.material.color = Color.red;
+						break;		
 					}
-				}
-		
-				if (_order.Count <= 0 && _path.Count > 0) {
-					GameObject t = GameObject.Find("LineRenderer");
-					t.SendMessage("DrawPath",_path);
+					
 				}
 			}
 		}
@@ -193,7 +152,6 @@ public class Game : MonoBehaviour {
 	
 	public void Find(int _method = 0) {	
 		bool _found = false;
-		PreRender();
 		
 		switch (_method) {
 			case 0:	//DFS
@@ -245,10 +203,6 @@ public class Game : MonoBehaviour {
 	
 	//Resets the grid to use the same map with a different search algorithm.
 	public void TriggerReset() {
-		//TODO DESTROY LineRenderer....
-		GameObject t = GameObject.Find("LineRenderer");
-		t.SendMessage("TriggerClear");
-		
 		_order = new List<Node>();
 		_path = new List<Node>();
 		
@@ -261,11 +215,11 @@ public class Game : MonoBehaviour {
 			for(int z = 0; z < sz; z++) {
 				Node n = _tiles[x,z].GetComponent("Node") as Node;
 				n.Visited = false;
-				n.Animated = false;
 				n.parent = null;
 				n.G = 0;
 				n.H = 0;
 				n.F = 0;
+				n.Path = false;
 			}
 		}
 	

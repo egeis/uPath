@@ -33,12 +33,14 @@ public class DFS {
 		
 		if (_start.Status == Node.END) {
 			_path.Add (_start);
+			_start.Path = true;
 			return true;
 		} else {
 			for (int i = 0; i < _start.adjacent.Count; i++) {
 				if (_start.adjacent [i].IsValid ()) {
 					if (Find (_start.adjacent [i])) {
 						_path.Insert (0, _start);
+						_start.Path = true;
 						return true;
 					}
 				}
