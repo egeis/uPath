@@ -8,7 +8,6 @@ public class Controller_GUI : MonoBehaviour {
 	private int _currentMap = 0;
 	private bool _triggerReset = false;
 	private bool _triggerSearch = false;
-	private bool _triggerLoad = false;
 	private string _message = "Press Search to Start the search.";
 	private GUIStyle style = new GUIStyle();
 	private GUIStyle styleMessages = new GUIStyle();

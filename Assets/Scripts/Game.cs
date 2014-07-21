@@ -9,7 +9,6 @@ public class Game : MonoBehaviour {
 
 	private GameObject[,] _tiles;
 	
-	private List<Node> _order = new List<Node>();
 	private List<Node> _path = new List<Node>();
 	private Node _start;
 	private Node _goal;
@@ -157,17 +156,14 @@ public class Game : MonoBehaviour {
 			case 0:	//DFS
 				_found = depth.Find (_start);
 				_path = depth.GetPath ();
-				if (_found) _order = depth.GetOrder();
 				break;
 			case 1:	//BFS
 				_found = breadth.Find (_start);
 				_path = breadth.GetPath ();
-				if (_found) _order = breadth.GetOrder();
 			break;
 			case 2:	//A*
 				_found = astar.Find(_start, _goal);
 				_path = astar.GetPath ();
-				if (_found) _order = astar.GetOrder();
 				break;
 		}
 
@@ -203,7 +199,6 @@ public class Game : MonoBehaviour {
 	
 	//Resets the grid to use the same map with a different search algorithm.
 	public void TriggerReset() {
-		_order = new List<Node>();
 		_path = new List<Node>();
 		
 		depth = new DFS();
