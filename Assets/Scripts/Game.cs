@@ -59,7 +59,7 @@ public class Game : MonoBehaviour {
 		_tiles = new GameObject[sx,sz];
 		for(int x = 0; x < sx; x++) {
 			for(int z = 0; z < sz; z++) {
-				GameObject tile = Instantiate(Resources.Load("tile")) as GameObject;
+				GameObject tile = Instantiate(Resources.Load("Prefab/tile")) as GameObject;
 				tile.name = "Tile_"+x+"_"+z;
 				tile.transform.position = new Vector3( (float) x, 0, (float) z);
 				
@@ -129,18 +129,18 @@ public class Game : MonoBehaviour {
 																																								
 					switch (n.Status) {
 					case Node.CLEAR:
-						if(n.Path) _tiles[x,z].renderer.material.color = Color.white;
-						else if(n.Visited) _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.5f);
-						else _tiles[x,z].renderer.material.color = Color.Lerp(Color.white, Color.black, 0.6f);
+						if(n.Path) _tiles[x,z].GetComponent<Renderer>().material.color = Color.white;
+						else if(n.Visited) _tiles[x,z].GetComponent<Renderer>().material.color = Color.Lerp(Color.white, Color.black, 0.5f);
+						else _tiles[x,z].GetComponent<Renderer>().material.color = Color.Lerp(Color.white, Color.black, 0.6f);
 						break;
 					case Node.START:
-						_tiles[x,z].renderer.material.color = Color.blue;
+						_tiles[x,z].GetComponent<Renderer>().material.color = Color.blue;
 						break;	
 					case Node.END:
-						_tiles[x,z].renderer.material.color = Color.yellow;
+						_tiles[x,z].GetComponent<Renderer>().material.color = Color.yellow;
 						break;
 					case Node.OBSTRUCTED:
-						_tiles[x,z].renderer.material.color = Color.red;
+						_tiles[x,z].GetComponent<Renderer>().material.color = Color.red;
 						break;		
 					}
 					
